@@ -1,12 +1,68 @@
-import psycopg
+import os
+from typing import List
+import psycopg2
+from schema import Recommendation, UserPreference
+from openai import OpenAI
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # Define your connection string
-connection_string = "postgresql://neondb_owner:tK4ijw9YHaxc@ep-shy-frost-a5o6ki2u.us-east-2.aws.neon.tech/neondb?sslmode=require"
+connection_string = os.environ.get("DATABASE_URL")
 
 # Establish the connection
-with psycopg.connect(connection_string) as conn:
-    with conn.cursor() as cur:
-        # Execute a test query to check the connection
-        cur.execute("SELECT version();")
-        db_version = cur.fetchone()
-        print(f"Connected to PostgreSQL, version: {db_version}")
+
+def get_recommendation(user_preference:UserPreference):
+    try:
+        with psycopg2.connect(connection_string) as conn:
+            with conn.cursor() as cur:
+                embedding = get_embedding(user_preference)
+                query = """
+            WITH user_embedding AS (
+                SELECT %s::vector AS embedding
+            )
+            SELECT 
+                u.name AS name,
+                u.country AS country,
+                u.rank AS rank,
+                d.name AS stream,
+                c.name AS course,
+                c.fees AS fees,
+                1 - (p.embedding <=> ue.embedding) AS similarity  -- Cosine similarity (higher is better)
+            FROM 
+                preference p
+            JOIN 
+                university u ON p.Uid = u.id
+            JOIN 
+                department d ON p.Did = d.id
+            JOIN 
+                course c ON p.Cid = c.id,
+                user_embedding ue
+            ORDER BY 
+                similarity DESC
+            LIMIT 10;
+            """
+
+                cur.execute(query, (embedding,))
+                
+                # Fetch and print the results
+                results = cur.fetchall()
+                print(results)
+    except Exception as e:
+        return f"Error Getting Recommendation: {e}"
+
+
+def get_embedding(user_preference:UserPreference):
+    embd = client.embeddings.create(
+    model="text-embedding-3-small",
+    input=f"{user_preference.country} {user_preference.fees} {user_preference.stream} {user_preference.rank}",
+    dimensions=128,
+    encoding_format="float"
+    )
+    return embd.data[0].embedding
+
+
+print(get_recommendation(UserPreference(
+    country="USA",
+    fees=2500,
+    stream="CSE",
+    rank="2.5GSE"
+)))
