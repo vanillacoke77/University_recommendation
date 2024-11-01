@@ -2,7 +2,7 @@ import os
 import re
 from typing import List
 import psycopg2
-from schema import Recommendation, UserPreference
+from schema import Recommendation, User, UserPreference
 from openai import OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -61,3 +61,17 @@ def get_embedding(user_preference:UserPreference):
     )
     return embd.data[0].embedding
 
+def user_login(user:User):
+    try:
+        with psycopg2.connect(connection_string) as conn:
+            with conn.cursor() as cur:
+                query = """
+                        INSERT INTO users (name, email, phoneno, password)                        
+                        VALUES (%s, %s, %s, %s);
+                    """
+                cur.execute(query, (user.name, user.email, user.phoneno, user.password))
+                conn.commit()
+                return "User Created Successfully"
+            
+    except Exception as e:
+        return f"Error while creating user: {e}"
