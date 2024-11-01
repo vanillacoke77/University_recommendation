@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from schema import UserPreference
+from recommendation import get_recommendation
 
 app = FastAPI()
 
@@ -6,6 +8,6 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/recommendation")
-def recommendation():
-    return {"Recommendation": "Hello"}
+@app.post("/recommendation")
+def recommendation(user_preference:UserPreference):
+    return {"recommendation": get_recommendation(user_preference)}

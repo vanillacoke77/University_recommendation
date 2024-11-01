@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 import psycopg2
 from schema import Recommendation, UserPreference
@@ -45,7 +46,8 @@ def get_recommendation(user_preference:UserPreference):
                 
                 # Fetch and print the results
                 results = cur.fetchall()
-                print(results)
+                recommendations = [Recommendation(name=row[0], country=row[1], rank=row[2], stream=row[3], course=row[4], fees=row[5]) for row in results]
+                return recommendations
     except Exception as e:
         return f"Error Getting Recommendation: {e}"
 
@@ -59,10 +61,3 @@ def get_embedding(user_preference:UserPreference):
     )
     return embd.data[0].embedding
 
-
-print(get_recommendation(UserPreference(
-    country="USA",
-    fees=2500,
-    stream="CSE",
-    rank="2.5GSE"
-)))
