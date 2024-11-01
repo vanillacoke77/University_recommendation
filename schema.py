@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
 class User(BaseModel):
-    id: int
     name: str
     email: str
+    phoneno: str
     password: str
 
 class UserPreference(BaseModel):
