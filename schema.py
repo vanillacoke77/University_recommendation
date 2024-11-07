@@ -1,9 +1,10 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class User(BaseModel):
     name: str
-    email: str
-    phoneno: str
+    email: Optional[str] = None  # Make email optional
+    phoneno: Optional[str] = None
     password: str
 
 class UserPreference(BaseModel):
