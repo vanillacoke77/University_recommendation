@@ -4,14 +4,14 @@ import psycopg2
 from schema import Recommendation, UserPreference
 from openai import OpenAI
 
-# Load environment variables
+
 load_dotenv()
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# Connection string from environment variables
+
 connection_string = os.environ.get("DATABASE_URL")
 
-# Function to generate recommendations
+
 def get_recommendation(user_preference: UserPreference):
     try:
         with psycopg2.connect(connection_string) as conn:
@@ -49,7 +49,7 @@ def get_recommendation(user_preference: UserPreference):
     except Exception as e:
         return f"Error getting recommendation: {e}"
 
-# Function to create embeddings for user preferences
+
 def get_embedding(user_preference: UserPreference):
     try:
         embd = client.embeddings.create(

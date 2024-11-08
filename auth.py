@@ -4,17 +4,16 @@ import psycopg2
 from validation import validate_user_input
 from schema import User
 
-# Load environment variables
+
 load_dotenv()
 
-# Connection string from environment variables
+
 connection_string = os.environ.get("DATABASE_URL")
 
-# Function to handle user login (returns True/False)
-# In auth.py
+
 def user_login(user: User) -> str:
     try:
-        # Assuming you check the credentials in the database
+       
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
                 query = "SELECT * FROM users WHERE name = %s AND password = %s"
@@ -28,7 +27,7 @@ def user_login(user: User) -> str:
         return f"Error during login: {e}"
 
 
-# Function to handle user sign-up
+
 def user_signup(user: User) -> str:
     if not validate_user_input(user.email, user.phoneno, user.password):
         return "Invalid user input: Check email, phone number, or password format."
@@ -51,7 +50,7 @@ def user_signup(user: User) -> str:
         print(f"Error during sign-up: {e}")
         return f"Error during sign-up: {e}"
 
-# Function to check if a user is an admin
+
 def is_admin(email: str) -> bool:
     try:
         with psycopg2.connect(connection_string) as conn:
