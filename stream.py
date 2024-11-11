@@ -1,7 +1,7 @@
 import streamlit as st
 from auth import user_login, user_signup
 from schema import User, UserPreference
-from recommendation import get_recommendation
+from recommendation import get_entries, get_recommendation
 import requests
 import json
 import psycopg2
@@ -31,6 +31,8 @@ def display_login_page():
     if st.button("Go to Signup Page"):
         st.session_state.page = "signup"
 
+
+
 def display_signup_page():
     st.title("Signup Page")
     fname = st.text_input("Full Name")
@@ -53,20 +55,32 @@ def display_signup_page():
         st.session_state.page = "login"
 
 def display_preferences_page():
-    st.title("Preferences Page")
-    st.write("Welcome to the preferences page!")
     st.title("User Preferences")
-    country = st.selectbox("Country Preference", ["USA", "Canada", "UK", "Australia", "Germany"])
-    
-    stream_pref = st.selectbox("Stream Preference", ["Engineering", "Business", "Arts", "Science", "Law"])
+
+    if 'submitted' not in st.session_state:
+        st.session_state.submitted = False
+    if 'country' not in st.session_state:
+        st.session_state.country = ""
+    if 'stream_pref' not in st.session_state:
+        st.session_state.stream_pref = ""
+    if 'rank' not in st.session_state:
+        st.session_state.rank = "" 
+
+    if st.session_state.submitted == False:
+        country = st.selectbox("Country Preference", get_entries("country"))
+        stream_pref = st.selectbox("Stream Preference", get_entries("stream"))
+        rank = st.selectbox("Rank", get_entries("rank"))
+
+    else:
+        country = st.selectbox("Country Preference", [st.session_state.country])
+        stream_pref = st.selectbox("Stream Preference", [st.session_state.stream_pref])
+        rank = st.selectbox("Rank", [st.session_state.rank])
 
     fees = st.selectbox("Fee Bracket", ["<$10,000", "$10,000-$20,000", ">$20,000"])
 
-    rank = st.selectbox("Rank", ["Top 10", "Top 50", "Top 100", "Top 200"])
-
-
     if st.button("Submit"):
         # Prepare the data to send in JSON format
+        st.session_state.submitted = True
         if fees == "<$10,000":
             fee_bracket = 10000
         elif fees == "$10,000-$20,000":
@@ -95,6 +109,9 @@ def display_preferences_page():
                 st.write(f"**Fees**: {rec.get('fees', 'N/A')}")
                 st.write(f"**Stream**: {rec.get('stream', 'N/A')}")
                 st.write(f"**Rank**: {rec.get('rank', 'N/A')}")
+
+
+
 
 def display_admin_page():
     st.title("Admin Page")

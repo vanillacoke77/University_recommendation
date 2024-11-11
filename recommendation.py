@@ -1,11 +1,8 @@
 import os
-from dotenv import load_dotenv
 import psycopg2
 from schema import Recommendation, UserPreference
 from openai import OpenAI
 
-
-load_dotenv()
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
@@ -17,31 +14,7 @@ def get_recommendation(user_preference: UserPreference):
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
                 embedding = get_embedding(user_preference)
-                query = """
-                WITH user_embedding AS (
-                    SELECT %s::vector AS embedding
-                )
-                SELECT 
-                    u.name AS name,
-                    u.country AS country,
-                    u.rank AS rank,
-                    d.name AS stream,
-                    c.name AS course,
-                    c.fees AS fees,
-                    1 - (p.embedding <=> ue.embedding) AS similarity
-                FROM 
-                    preference p
-                JOIN 
-                    university u ON p.Uid = u.id
-                JOIN 
-                    department d ON p.Did = d.id
-                JOIN 
-                    course c ON p.Cid = c.id,
-                    user_embedding ue
-                ORDER BY 
-                    similarity DESC
-                LIMIT 10;
-                """
+                query = "SELECT * FROM get_top_matches(%s::vector);"
                 cur.execute(query, (embedding,))
                 results = cur.fetchall()
                 recommendations = [Recommendation(name=row[0], country=row[1], rank=row[2], stream=row[3], course=row[4], fees=row[5]) for row in results]
@@ -61,3 +34,19 @@ def get_embedding(user_preference: UserPreference):
         return embd.data[0].embedding
     except Exception as e:
         raise RuntimeError(f"Error generating embedding: {e}")
+
+def get_entries(entry_type:str):
+    try:
+        with psycopg2.connect(connection_string) as conn:
+            with conn.cursor() as cur:
+                if entry_type == "country":
+                    cur.execute("SELECT country FROM preference")
+                elif entry_type == "stream":
+                    cur.execute("SELECT name FROM department")
+                elif entry_type == "rank":
+                    cur.execute("SELECT rank FROM university")
+                results = cur.fetchall()
+                return [row[0] for row in results]
+    except Exception as e:
+        return f"Error getting entries: {e}"
+    
