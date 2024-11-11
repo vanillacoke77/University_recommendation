@@ -132,35 +132,40 @@ def display_admin_page():
         except Exception as e:
             st.error(f"Error fetching users: {e}")
 
+    st.write("### Make User Admin")
+    username = st.text_input("Enter Username to Make Admin")
     if st.button("Make User Admin"):
-        username = st.text_input("Enter username")
-        print(username)
-        try:
-            result = make_user_admin(username)
-            print(result)
-            user = execute_query(f"SELECT * FROM users WHERE name = '{username}'")
-            user_df = pd.DataFrame(user, columns=["Name", "Email", "Admin"])
-            st.table(user_df)
-            st.success(f"{username} is now an admin.")
-        except Exception as e:
-            st.error(f"Error making user admin: {e}")
-    
-    if st.button("Add new User"):
-        with st.form(key='add_user_form'):
-            name = st.text_input("Name")
-            email = st.text_input("Email")
-            phoneno = st.text_input("Phone Number")
-            password = st.text_input("Password", type="password")
-            is_admin = st.checkbox("Is Admin")
-            submit_button = st.form_submit_button(label='Submit')
-            
-            if submit_button:
-                user = User(name=name, email=email, phoneno=phoneno, password=password, is_admin=is_admin)
-                result = insert_user(user)
+        if username:
+            try: 
+                result = make_user_admin(username)
                 st.success(result)
-                user = execute_query(f"SELECT * FROM users WHERE name = '{name}'")
-                user_df = pd.DataFrame(user, columns=["Name", "Email", "Admin"])
+                user = execute_query(f"SELECT * FROM users WHERE name = '{username}'")
+                print(user)
+                user_df = pd.DataFrame(user, columns=["UserId", "Name", "Email","PhoneNo", "Password", "Admin"])
                 st.table(user_df)
+            except Exception as e:
+                st.error(f"Error {e}")
+
+
+
+    st.write("### Add New User")
+    with st.form(key='add_user_form'):
+        name = st.text_input("Name")
+        email = st.text_input("Email")
+        phoneno = st.text_input("Phone Number")
+        password = st.text_input("Password", type="password")
+        is_admin = st.checkbox("Is Admin")
+        submit_button = st.form_submit_button(label='Submit')
+        
+        if submit_button:
+            user = User(name=name, email=email, phoneno=phoneno, password=password, is_admin=is_admin)
+            result = insert_user(user)
+            st.success(result)
+            
+            # Display the added user info
+            user = execute_query(f"SELECT * FROM users WHERE name = '{name}'")
+            user_df = pd.DataFrame(user, columns=["UserId", "Name", "Email","PhoneNo", "Password", "Admin"])
+            st.table(user_df)
 
     if st.button("Logout"):
         st.session_state.page = "login"

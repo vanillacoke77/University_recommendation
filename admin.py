@@ -36,6 +36,7 @@ def make_user_admin(username:str):
                     (username,)
                 )
                 conn.commit()
+            return "User made admin successfully"
     except Exception as e:
         return(f"Error making user admin: {e}")
 
@@ -44,9 +45,10 @@ def execute_query(query:str):
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
                 cur.execute(query)
+                user = cur.fetchall()
                 conn.commit()
+                return user
     except Exception as e:
         return(f"Error executing query: {e}")
     
 
-print(make_user_admin("y"))
