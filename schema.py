@@ -6,6 +6,7 @@ class User(BaseModel):
     email: Optional[str] = None 
     phoneno: Optional[str] = None
     password: str
+    is_admin: Optional[bool] = False
 
 class UserPreference(BaseModel):
     country: str
