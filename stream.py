@@ -68,8 +68,13 @@ def display_preferences_page():
 
     if st.session_state.submitted == False:
         country = st.selectbox("Country Preference", get_entries("country"))
+        st.session_state.country = country
+
         stream_pref = st.selectbox("Stream Preference", get_entries("stream"))
+        st.session_state.stream_pref = stream_pref
+        
         rank = st.selectbox("Rank", get_entries("rank"))
+        st.session_state.rank = rank
 
     else:
         country = st.selectbox("Country Preference", [st.session_state.country])
