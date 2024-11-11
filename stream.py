@@ -1,11 +1,10 @@
 import streamlit as st
+from admin import execute_query, get_users, insert_user, make_user_admin
 from auth import user_login, user_signup
 from schema import User, UserPreference
 from recommendation import get_entries, get_recommendation
-import requests
-import json
-import psycopg2
-from auth import connection_string
+import requests,json
+import pandas as pd
 
 def display_login_page():
     st.title("Login Page")
@@ -17,6 +16,7 @@ def display_login_page():
         if username and password:
             user = User(name=username, password=password, email=None, phoneno=None)
             result = user_login(user)
+
             if result == "Login successful as admin":
                 st.success("Logged in as Administrator")
                 st.session_state.page = "admin"
@@ -72,7 +72,7 @@ def display_preferences_page():
 
         stream_pref = st.selectbox("Stream Preference", get_entries("stream"))
         st.session_state.stream_pref = stream_pref
-        
+
         rank = st.selectbox("Rank", get_entries("rank"))
         st.session_state.rank = rank
 
@@ -113,6 +113,7 @@ def display_preferences_page():
                 st.write(f"**Country**: {rec.get('country', 'N/A')}")
                 st.write(f"**Fees**: {rec.get('fees', 'N/A')}")
                 st.write(f"**Stream**: {rec.get('stream', 'N/A')}")
+                st.write(f"**Course**: {rec.get('course', 'N/A')}")
                 st.write(f"**Rank**: {rec.get('rank', 'N/A')}")
 
 
@@ -125,14 +126,41 @@ def display_admin_page():
     # Add admin-specific functionalities, e.g., user management, viewing logs, etc.
     if st.button("View All Users"):
         try:
-            with psycopg2.connect(connection_string) as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT name, email, is_admin FROM users")
-                    users = cur.fetchall()
-                    for user in users:
-                        st.write(f"Name: {user[0]}, Email: {user[1]}, Admin: {user[2]}")
+            users = get_users()
+            df_users = pd.DataFrame(users, columns=["Name", "Email", "Admin"])
+            st.table(df_users)
         except Exception as e:
             st.error(f"Error fetching users: {e}")
+
+    if st.button("Make User Admin"):
+        username = st.text_input("Enter username")
+        print(username)
+        try:
+            result = make_user_admin(username)
+            print(result)
+            user = execute_query(f"SELECT * FROM users WHERE name = '{username}'")
+            user_df = pd.DataFrame(user, columns=["Name", "Email", "Admin"])
+            st.table(user_df)
+            st.success(f"{username} is now an admin.")
+        except Exception as e:
+            st.error(f"Error making user admin: {e}")
+    
+    if st.button("Add new User"):
+        with st.form(key='add_user_form'):
+            name = st.text_input("Name")
+            email = st.text_input("Email")
+            phoneno = st.text_input("Phone Number")
+            password = st.text_input("Password", type="password")
+            is_admin = st.checkbox("Is Admin")
+            submit_button = st.form_submit_button(label='Submit')
+            
+            if submit_button:
+                user = User(name=name, email=email, phoneno=phoneno, password=password, is_admin=is_admin)
+                result = insert_user(user)
+                st.success(result)
+                user = execute_query(f"SELECT * FROM users WHERE name = '{name}'")
+                user_df = pd.DataFrame(user, columns=["Name", "Email", "Admin"])
+                st.table(user_df)
 
     if st.button("Logout"):
         st.session_state.page = "login"

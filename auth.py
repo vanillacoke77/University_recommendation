@@ -19,7 +19,7 @@ def user_login(user: User) -> str:
                 else:
                     return "Login successful as user"
     except Exception as e:
-        return f"Error during login: {e}"
+        return f"Error during login: User Doesn't exist"
 
 def user_signup(user: User) -> str:
     if not validate_user_input(user.email, user.phoneno, user.password):
@@ -41,6 +41,5 @@ def user_signup(user: User) -> str:
                 return "User created successfully."
     except Exception as e:
         return f"Error during sign-up: {e}"
-
 
 
