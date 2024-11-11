@@ -3,7 +3,6 @@ import psycopg2
 from validation import validate_user_input
 from schema import User
 
-connection_string = os.environ.get("DATABASE_URL")
 
 def user_login(user: User) -> str:
     try:
