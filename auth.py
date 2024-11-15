@@ -2,7 +2,7 @@ import os
 import psycopg2
 from validation import validate_user_input
 from schema import User
-
+from recommendation import connection_string
 
 def user_login(user: User) -> str:
     try:
@@ -12,13 +12,13 @@ def user_login(user: User) -> str:
                 cur.execute(query, (user.name, user.password))
                 result = cur.fetchone()
                 print(result)
-                if result[5]==True:
-                    user.is_admin = result[5] 
+                if result[4]==True:
+                    user.is_admin = result[4] 
                     return "Login successful as admin"
                 else:
                     return "Login successful as user"
     except Exception as e:
-        return f"Error during login: User Doesn't exist"
+        return f"Error during login: User Doesn't exist {e}"
 
 def user_signup(user: User) -> str:
     if not validate_user_input(user.email, user.phoneno, user.password):
@@ -32,10 +32,10 @@ def user_signup(user: User) -> str:
                     return "User already exists."
                 
                 query = """
-                    INSERT INTO users (name, email, phoneno, password, is_admin)
+                    INSERT INTO users (name, email, phoneno, is_admin,password)
                     VALUES (%s, %s, %s, %s, %s);
                 """
-                cur.execute(query, (user.name, user.email, user.phoneno, user.password, user.is_admin))
+                cur.execute(query, (user.name, user.email, user.phoneno, user.is_admin,user.password))
                 conn.commit()
                 return "User created successfully."
     except Exception as e:

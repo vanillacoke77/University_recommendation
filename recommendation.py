@@ -2,8 +2,8 @@ import os
 import psycopg2
 from schema import Recommendation, UserPreference
 from openai import OpenAI
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -42,13 +42,14 @@ def get_entries(entry_type:str):
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
                 if entry_type == "country":
-                    cur.execute("SELECT country FROM preference")
+                    cur.execute("SELECT distinct country FROM preference")
                 elif entry_type == "stream":
-                    cur.execute("SELECT name FROM department")
+                    cur.execute("SELECT distinct name FROM department")
                 elif entry_type == "rank":
-                    cur.execute("SELECT rank FROM university")
+                    cur.execute("SELECT distinct rank FROM university")
                 results = cur.fetchall()
                 return [row[0] for row in results]
     except Exception as e:
         return f"Error getting entries: {e}"
     
+print(get_recommendation(UserPreference(country="USA", fees=10000, stream="Computer Science", rank="top 10")))

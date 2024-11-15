@@ -50,5 +50,25 @@ def execute_query(query:str):
                 return user
     except Exception as e:
         return(f"Error executing query: {e}")
-    
 
+def delete_user(username, email):
+    query = f"DELETE FROM users WHERE name = '{username}' AND email = '{email}'"
+    try: 
+        with psycopg2.connect(connection_string) as conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                conn.commit()
+    except Exception as e:
+        return f"Error Deleting: {e}"
+    return 
+
+
+def get_universities():
+    try:
+        with psycopg2.connect(connection_string) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM university_view")
+                users = cur.fetchall()
+                return users
+    except Exception as e:
+        return(f"Error fetching users: {e}")
