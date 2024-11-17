@@ -8,7 +8,7 @@ def user_login(user: User) -> str:
     try:
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
-                query = "SELECT * FROM users_view WHERE name = %s AND password = %s"
+                query = "SELECT * FROM users WHERE name = %s AND password = %s"
                 cur.execute(query, (user.name, user.password))
                 result = cur.fetchone()
                 print(result)

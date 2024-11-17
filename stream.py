@@ -1,5 +1,5 @@
 import streamlit as st
-from admin import delete_user, execute_query, get_users, insert_user, make_user_admin
+from admin import delete_user, execute_query, get_users, insert_user, make_user_admin, get_universities
 from auth import user_login, user_signup
 from schema import User, UserPreference
 from recommendation import get_entries, get_recommendation
@@ -106,7 +106,12 @@ def display_preferences_page():
                     st.write(f"**Rank**: {rec.get('rank', 'N/A')}")
 
     with tab2:
-        st.write("View all Universities")
+        if st.button("View All Universities"):
+            universities = get_universities()
+            print(universities)
+            df = pd.DataFrame(universities, columns=["Name","Country"])
+            st.table(df)
+
         
 
 

@@ -67,8 +67,8 @@ def get_universities():
     try:
         with psycopg2.connect(connection_string) as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM university_view")
-                users = cur.fetchall()
-                return users
+                cur.execute("SELECT * FROM university_view;")
+                universities= cur.fetchall()
+                return universities
     except Exception as e:
         return(f"Error fetching users: {e}")
